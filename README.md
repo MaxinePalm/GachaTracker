@@ -89,78 +89,83 @@ GO
 
 -- Genshin Impact Characters Table
 CREATE TABLE GenshinCharacters (
-    Id INT IDENTITY PRIMARY KEY,
+    Id INT PRIMARY KEY IDENTITY(1,1),
     Name NVARCHAR(100) NOT NULL,
     Element NVARCHAR(50) NOT NULL,
-    Rarity INT DEFAULT 5,
-    CurrentLevel INT DEFAULT 1,
+    Rarity INT NOT NULL,
+    CurrentLevel INT NOT NULL,
     WeaponType NVARCHAR(50),
     WeaponName NVARCHAR(100),
-    WeaponLevel INT DEFAULT 1,
-    TalentBasicAttack INT DEFAULT 1,
-    TalentSkill INT DEFAULT 1,
-    TalentUltimate INT DEFAULT 1,
+    WeaponLevel INT NOT NULL,
+    TalentBasicAttack INT NOT NULL,
+    TalentSkill INT NOT NULL,
+    TalentUltimate INT NOT NULL,
     ArtifactSet NVARCHAR(100),
-    ArtifactsPieces INT DEFAULT 0
+    ArtifactsPieces INT NOT NULL
 );
 
 -- Honkai: Star Rail Characters Table
 CREATE TABLE StarRailCharacters (
-    Id INT IDENTITY PRIMARY KEY,
+    Id INT PRIMARY KEY IDENTITY(1,1),
     Name NVARCHAR(100) NOT NULL,
     Element NVARCHAR(50) NOT NULL,
     Path NVARCHAR(50),
-    Rarity INT DEFAULT 5,
-    CurrentLevel INT DEFAULT 1,
+    Rarity INT NOT NULL,
+    CurrentLevel INT NOT NULL,
     LightconeName NVARCHAR(100),
-    LightconeLevel INT DEFAULT 1,
-    TalentBasicAttack INT DEFAULT 1,
-    TalentSkill INT DEFAULT 1,
-    TalentUltimate INT DEFAULT 1,
-    TalentTalent INT DEFAULT 1,
+    LightconeLevel INT NOT NULL,
+    TalentBasicAttack INT NOT NULL,
+    TalentSkill INT NOT NULL,
+    TalentUltimate INT NOT NULL,
+    TalentTalent INT NOT NULL,
     RelicSet NVARCHAR(100),
-    RelicPieces INT DEFAULT 0
+    RelicPieces INT NOT NULL
 );
 
 -- Zenless Zone Zero Characters Table
 CREATE TABLE ZZZCharacters (
-    Id INT IDENTITY PRIMARY KEY,
+    Id INT PRIMARY KEY IDENTITY(1,1),
     Name NVARCHAR(100) NOT NULL,
     Element NVARCHAR(50) NOT NULL,
     Faction NVARCHAR(50),
-    Rank NVARCHAR(10) DEFAULT 'S',
-    CurrentLevel INT DEFAULT 1,
+    Rank NVARCHAR(10),
+    CurrentLevel INT NOT NULL,
     WEngineName NVARCHAR(100),
-    WEngineLevel INT DEFAULT 1,
-    SkillBasicAttack INT DEFAULT 1,
-    SkillDodge INT DEFAULT 1,
-    SkillAssist INT DEFAULT 1,
-    SkillSpecialAttack INT DEFAULT 1,
-    SkillChainAttack INT DEFAULT 1,
-    SkillTalent INT DEFAULT 1,
-    CoreSkillsCompleted INT DEFAULT 0
+    WEngineLevel INT NOT NULL,
+    SkillBasicAttack INT NOT NULL,
+    SkillDodge INT NOT NULL,
+    SkillAssist INT NOT NULL,
+    SkillSpecialAttack INT NOT NULL,
+    SkillChainAttack INT NOT NULL,
+    SkillTalent INT NOT NULL,
+    CoreSkillsCompleted INT NOT NULL
 );
 
 -- Wuthering Waves Characters Table
 CREATE TABLE WutheringCharacters (
-    Id INT IDENTITY PRIMARY KEY,
+    Id INT PRIMARY KEY IDENTITY(1,1),
     Name NVARCHAR(100) NOT NULL,
     Element NVARCHAR(50) NOT NULL,
-    Rarity INT DEFAULT 5,
-    CurrentLevel INT DEFAULT 1,
+    Rarity INT NOT NULL,
+    CurrentLevel INT NOT NULL,
     WeaponType NVARCHAR(50),
     WeaponName NVARCHAR(100),
-    WeaponLevel INT DEFAULT 1,
-    SkillNormalAttack INT DEFAULT 1,
-    SkillResonanceSkill INT DEFAULT 1,
-    SkillForteCircuit INT DEFAULT 1,
-    SkillResonanceLiberation INT DEFAULT 1,
-    SkillIntroSkill INT DEFAULT 1,
-    StatNodesCompleted INT DEFAULT 0,
-    InherentSkillsCompleted INT DEFAULT 1,
+    WeaponLevel INT NOT NULL,
+    SkillNormalAttack INT NOT NULL,
+    SkillResonanceSkill INT NOT NULL,
+    SkillForteCircuit INT NOT NULL,
+    SkillResonanceLiberation INT NOT NULL,
+    SkillIntroSkill INT NOT NULL,
+    StatNodesCompleted INT NOT NULL,
+    InherentSkillsCompleted INT NOT NULL,
     EchoSet NVARCHAR(100),
-    EchoPieces INT DEFAULT 0
+    EchoPieces INT NOT NULL
 );
+
+SELECT TABLE_NAME 
+FROM INFORMATION_SCHEMA.TABLES 
+WHERE TABLE_TYPE = 'BASE TABLE'
+ORDER BY TABLE_NAME;
 ```
 
 ### Option 2: Entity Framework Migrations (Recommended)
