@@ -475,7 +475,7 @@ Need help? We're here for you!
 - 📖 **Documentation:** Check the [Troubleshooting](#-troubleshooting) section above
 - 🐛 **Bug Reports:** [Open an Issue](https://github.com/yourusername/gacha-tracker/issues)
 - 💬 **Questions:** [Start a Discussion](https://github.com/yourusername/gacha-tracker/discussions)
-- 📧 **Email:** support@gachatracker.com
+- 📧 **Email:** maxinepalm450@gmail.com
 - 💡 **Feature Requests:** We'd love to hear your ideas!
 
 ---
@@ -495,10 +495,10 @@ Need help? We're here for you!
 
 ## 📈 Project Stats
 
-- ⭐ **Lines of Code:** 5,000+
+- ⭐ **Lines of Code:** 2,000+
 - 🎮 **Games Supported:** 4
 - 📊 **Database Tables:** 4
-- 🔧 **Features:** 20+
+- 🔧 **Features:** 10+
 - 💙 **Made with Love:** 100%
 
 ---
