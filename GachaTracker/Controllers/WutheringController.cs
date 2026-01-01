@@ -16,7 +16,8 @@ namespace GachaTracker.Controllers
 
         public async Task<IActionResult> Index()
         {
-            return View(await _context.WutheringCharacters.ToListAsync());
+            var characters = await _context.WutheringCharacters.ToListAsync();
+            return View(characters);
         }
 
         [HttpGet]
@@ -42,7 +43,9 @@ namespace GachaTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Element,Rarity,CurrentLevel,WeaponType,WeaponName,WeaponLevel,SkillNormalAttack,SkillResonanceSkill,SkillForteCircuit,SkillResonanceLiberation,SkillIntroSkill,StatNodesCompleted,InherentSkillsCompleted,EchoSet,EchoPieces")] WutheringCharacter character)
         {
-            if (id != character.Id) return NotFound();
+            if (id != character.Id)
+                return NotFound();
+
             if (ModelState.IsValid)
             {
                 try
@@ -52,8 +55,10 @@ namespace GachaTracker.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!_context.WutheringCharacters.Any(e => e.Id == character.Id)) return NotFound();
-                    else throw;
+                    if (!await _context.WutheringCharacters.AnyAsync(e => e.Id == character.Id))
+                        return NotFound();
+                    else
+                        throw;
                 }
             }
             return RedirectToAction(nameof(Index));
