@@ -1,0 +1,479 @@
+﻿@model IEnumerable<GachaTracker.Models.EndfieldCharacter>
+@{
+    ViewData["Title"] = "Arknights: Endfield - Endfielder Tracker";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+            .modal.active {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+        .element-cryo {
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+        }
+
+        .element-heat {
+            background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+        }
+
+        .element-physical {
+            background: linear-gradient(135deg, #71717a 0%, #a1a1aa 100%);
+        }
+
+        .element-nature {
+            background: linear-gradient(135deg, #22c55e 0%, #4ade80 100%);
+        }
+
+        .element-electric {
+            background: linear-gradient(135deg, #a855f7 0%, #c084fc 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white">
+    <div class="max-w-7xl mx-auto p-8">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <a href="/" class="inline-flex items-center gap-2 text-blue-300 hover:text-blue-200 mb-4">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    <span>Back to Games</span>
+                </a>
+                <h1 class="text-6xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                    Arknights: Endfield
+                </h1>
+                <p class="text-xl text-blue-200 mt-2">Endfielder Progress Tracker</p>
+            </div>
+            <button onclick="openModal()" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 rounded-lg font-bold shadow-lg hover:shadow-blue-500/50 transition-all flex items-center gap-2">
+                <i data-lucide="plus" class="w-5 h-5"></i>
+                Add Endfielder
+            </button>
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="mb-8 flex flex-wrap gap-3">
+            <button class="filter-btn bg-blue-600 shadow-lg px-4 py-2 rounded-lg hover:bg-blue-500 transition-all" data-element="All" onclick="filterElement('All')">
+                All Endfielders
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-lg hover:bg-blue-500/30 transition-all" data-element="Cryo" onclick="filterElement('Cryo')">
+                ❄️ Cryo
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-lg hover:bg-blue-500/30 transition-all" data-element="Heat" onclick="filterElement('Heat')">
+                🔥 Heat
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-lg hover:bg-blue-500/30 transition-all" data-element="Physical" onclick="filterElement('Physical')">
+                ⚔️ Physical
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-lg hover:bg-blue-500/30 transition-all" data-element="Nature" onclick="filterElement('Nature')">
+                🍃 Nature
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-lg hover:bg-blue-500/30 transition-all" data-element="Electric" onclick="filterElement('Electric')">
+                ⚡ Electric
+            </button>
+        </div>
+
+        <!-- Character Cards Grid -->
+        <div id="charactersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Cards will be inserted here by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Character Modal -->
+    <div id="characterModal" class="modal">
+        <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-8 max-w-4xl w-full mx-4 border-2 border-blue-500/30 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 id="modalTitle" class="text-3xl font-bold text-blue-300">Add New Endfielder</h2>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <form id="characterForm" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="characterId" name="Id" value="0" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Basic Info -->
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-blue-200 mb-2">Endfielder Name</label>
+                        <input type="text" id="name" name="Name" required class="w-full bg-slate-700/50 border border-blue-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-blue-200 mb-2">Element Type</label>
+                        <select id="elementType" name="ElementType" required class="w-full bg-slate-700/50 border border-blue-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500">
+                            <option value="Cryo">❄️ Cryo</option>
+                            <option value="Heat">🔥 Heat</option>
+                            <option value="Physical">⚔️ Physical</option>
+                            <option value="Nature">🍃 Nature</option>
+                            <option value="Electric">⚡ Electric</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-blue-200 mb-2">Sub Class</label>
+                        <select id="subClass" name="SubClass" required class="w-full bg-slate-700/50 border border-blue-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500">
+                            <option value="Guard">🛡️ Guard</option>
+                            <option value="Caster">✨ Caster</option>
+                            <option value="Striker">⚔️ Striker</option>
+                            <option value="Vanguard">🚀 Vanguard</option>
+                            <option value="Defender">🏰 Defender</option>
+                            <option value="Supporter">💚 Supporter</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-blue-200 mb-2">Weapon Type</label>
+                        <select id="weaponType" name="WeaponType" required class="w-full bg-slate-700/50 border border-blue-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500">
+                            <option value="Sword">⚔️ Sword</option>
+                            <option value="Greatsword">🗡️ Greatsword</option>
+                            <option value="Polearm">🔱 Polearm</option>
+                            <option value="Handcannon">🔫 Handcannon</option>
+                            <option value="Arts Unit">✨ Arts Unit</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-blue-200 mb-2">Promotion Level (0-4)</label>
+                        <input type="number" id="promotionLevel" name="PromotionLevel" min="0" max="4" value="0" class="w-full bg-slate-700/50 border border-blue-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
+                    </div>
+
+                    <!-- Levels -->
+                    <div>
+                        <label class="block text-sm font-medium text-blue-200 mb-2">Character Level (1-90)</label>
+                        <input type="number" id="characterLevel" name="CharacterLevel" min="1" max="90" value="1" class="w-full bg-slate-700/50 border border-blue-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-blue-200 mb-2">Weapon Level (1-90)</label>
+                        <input type="number" id="weaponLevel" name="WeaponLevel" min="1" max="90" value="1" class="w-full bg-slate-700/50 border border-blue-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-blue-200 mb-2">Outfitting Level (0-4)</label>
+                        <input type="number" id="outfittingLevel" name="OutfittingLevel" min="0" max="4" value="0" class="w-full bg-slate-700/50 border border-blue-500/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
+                    </div>
+
+                    <!-- Trust Talents Section -->
+                    <div class="col-span-2 bg-slate-700/30 rounded-lg p-4">
+                        <h3 class="text-lg font-bold text-blue-300 mb-3">Trust Talent Nodes (4)</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="trustTalent1" name="TrustTalent1" class="w-5 h-5 rounded bg-slate-600 border-blue-500" />
+                                <span>Trust Node 1</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="trustTalent2" name="TrustTalent2" class="w-5 h-5 rounded bg-slate-600 border-blue-500" />
+                                <span>Trust Node 2</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="trustTalent3" name="TrustTalent3" class="w-5 h-5 rounded bg-slate-600 border-blue-500" />
+                                <span>Trust Node 3</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="trustTalent4" name="TrustTalent4" class="w-5 h-5 rounded bg-slate-600 border-blue-500" />
+                                <span>Trust Node 4</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Under Trust Talents Section -->
+                    <div class="col-span-2 bg-slate-700/30 rounded-lg p-4">
+                        <h3 class="text-lg font-bold text-cyan-300 mb-3">Talents Under Trust (4)</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="underTrustTalent1" name="UnderTrustTalent1" class="w-5 h-5 rounded bg-slate-600 border-cyan-500" />
+                                <span>Talent 1</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="underTrustTalent2" name="UnderTrustTalent2" class="w-5 h-5 rounded bg-slate-600 border-cyan-500" />
+                                <span>Talent 2</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="underTrustTalent3" name="UnderTrustTalent3" class="w-5 h-5 rounded bg-slate-600 border-cyan-500" />
+                                <span>Talent 3</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="underTrustTalent4" name="UnderTrustTalent4" class="w-5 h-5 rounded bg-slate-600 border-cyan-500" />
+                                <span>Talent 4</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Ship Talents Section -->
+                    <div class="col-span-2 bg-slate-700/30 rounded-lg p-4">
+                        <h3 class="text-lg font-bold text-purple-300 mb-3">Ship Talents (4)</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="shipTalent1" name="ShipTalent1" class="w-5 h-5 rounded bg-slate-600 border-purple-500" />
+                                <span>Ship Talent 1</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="shipTalent2" name="ShipTalent2" class="w-5 h-5 rounded bg-slate-600 border-purple-500" />
+                                <span>Ship Talent 2</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="shipTalent3" name="ShipTalent3" class="w-5 h-5 rounded bg-slate-600 border-purple-500" />
+                                <span>Ship Talent 3</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="shipTalent4" name="ShipTalent4" class="w-5 h-5 rounded bg-slate-600 border-purple-500" />
+                                <span>Ship Talent 4</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Main Talents Section -->
+                    <div class="col-span-2 bg-slate-700/30 rounded-lg p-4">
+                        <h3 class="text-lg font-bold text-yellow-300 mb-3">Main Talents (Rank 1-9)</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm text-blue-200 mb-1">Main Talent 1</label>
+                                <input type="number" id="mainTalent1" name="MainTalent1" min="1" max="9" value="1" class="w-full bg-slate-600 border border-yellow-500/30 rounded px-3 py-2" />
+                            </div>
+                            <div>
+                                <label class="block text-sm text-blue-200 mb-1">Main Talent 2</label>
+                                <input type="number" id="mainTalent2" name="MainTalent2" min="1" max="9" value="1" class="w-full bg-slate-600 border border-yellow-500/30 rounded px-3 py-2" />
+                            </div>
+                            <div>
+                                <label class="block text-sm text-blue-200 mb-1">Main Talent 3</label>
+                                <input type="number" id="mainTalent3" name="MainTalent3" min="1" max="9" value="1" class="w-full bg-slate-600 border border-yellow-500/30 rounded px-3 py-2" />
+                            </div>
+                            <div>
+                                <label class="block text-sm text-blue-200 mb-1">Main Talent 4</label>
+                                <input type="number" id="mainTalent4" name="MainTalent4" min="1" max="9" value="1" class="w-full bg-slate-600 border border-yellow-500/30 rounded px-3 py-2" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 mt-6">
+                    <button type="submit" class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 rounded-lg font-bold shadow-lg transition-all">
+                        <span id="saveButtonText">Save Endfielder</span>
+                    </button>
+                    <button type="button" onclick="closeModal()" class="px-6 py-3 bg-slate-600 hover:bg-slate-500 rounded-lg font-bold transition-all">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Form -->
+    <form id="deleteForm" method="post" style="display: none;">
+        @Html.AntiForgeryToken()
+    </form>
+
+    <script>
+        let characters = @Html.Raw(Json.Serialize(Model));
+        let currentFilter = 'All';
+        let editingId = 0;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            renderCharacters();
+            lucide.createIcons();
+        });
+
+        function renderCharacters() {
+            const grid = document.getElementById('charactersGrid');
+            const filtered = currentFilter === 'All'
+                ? characters
+                : characters.filter(c => c.elementType === currentFilter);
+
+            grid.innerHTML = filtered.map(char => `
+                <div class="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur rounded-xl p-5 border-2 border-blue-500/30 hover:border-blue-400 transition-all hover:shadow-xl hover:shadow-blue-500/30">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold text-blue-100 mb-1">${char.name}</h3>
+                            <div class="flex gap-2 mb-2">
+                                <span class="element-${char.elementType.toLowerCase()} px-2 py-1 rounded text-xs font-bold">${char.elementType}</span>
+                                <span class="bg-blue-600/30 px-2 py-1 rounded text-xs font-bold">${char.subClass}</span>
+                            </div>
+                            <div class="text-sm text-slate-300">${char.weaponType}</div>
+                        </div>
+                        <div class="flex gap-1">
+                            <button onclick="editCharacter(${char.id})" class="p-2 bg-blue-600/30 hover:bg-blue-600 rounded transition-all">
+                                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="deleteCharacter(${char.id})" class="p-2 bg-red-600/30 hover:bg-red-600 rounded transition-all">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Character & Weapon Levels -->
+                    <div class="mb-3">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-blue-200">Character</span>
+                            <span class="font-semibold">Lv ${char.characterLevel}/90</span>
+                        </div>
+                        <div class="h-2 bg-black/30 rounded-full overflow-hidden">
+                            <div class="${getProgressColor(char.characterLevel, 90)} h-full" style="width: ${(char.characterLevel / 90) * 100}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-blue-200">Weapon</span>
+                            <span class="font-semibold">Lv ${char.weaponLevel}/90</span>
+                        </div>
+                        <div class="h-2 bg-black/30 rounded-full overflow-hidden">
+                            <div class="${getProgressColor(char.weaponLevel, 90)} h-full" style="width: ${(char.weaponLevel / 90) * 100}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Progression Systems -->
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                        <div class="bg-black/20 rounded p-2">
+                            <div class="text-xs text-blue-200">Promotion</div>
+                            <div class="font-bold text-yellow-400">${char.promotionLevel}/4</div>
+                        </div>
+                        <div class="bg-black/20 rounded p-2">
+                            <div class="text-xs text-blue-200">Outfitting</div>
+                            <div class="font-bold text-purple-400">${char.outfittingLevel}/4</div>
+                        </div>
+                    </div>
+
+                    <!-- Talents -->
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center justify-between bg-black/20 rounded p-2">
+                            <span class="text-blue-200">Trust Talents</span>
+                            <span class="font-bold text-blue-400">${char.totalTrustTalentsUnlocked}/4</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-black/20 rounded p-2">
+                            <span class="text-cyan-200">Under Trust</span>
+                            <span class="font-bold text-cyan-400">${char.totalUnderTrustTalentsUnlocked}/4</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-black/20 rounded p-2">
+                            <span class="text-purple-200">Ship Talents</span>
+                            <span class="font-bold text-purple-400">${char.totalShipTalentsUnlocked}/4</span>
+                        </div>
+                        <div class="flex items-center justify-between bg-black/20 rounded p-2">
+                            <span class="text-yellow-200">Main Talents</span>
+                            <span class="font-bold text-yellow-400">${char.mainTalent1}/${char.mainTalent2}/${char.mainTalent3}/${char.mainTalent4}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        function getProgressColor(current, max) {
+            const percent = (current / max) * 100;
+            if (percent === 100) return 'bg-gradient-to-r from-green-500 to-emerald-500';
+            if (percent >= 75) return 'bg-gradient-to-r from-blue-500 to-cyan-500';
+            if (percent >= 50) return 'bg-gradient-to-r from-yellow-500 to-orange-500';
+            return 'bg-gradient-to-r from-red-500 to-pink-500';
+        }
+
+        function filterElement(element) {
+            currentFilter = element;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.element === element) {
+                    btn.classList.add('bg-blue-600', 'shadow-lg');
+                } else {
+                    btn.classList.remove('bg-blue-600', 'shadow-lg');
+                }
+            });
+            renderCharacters();
+        }
+
+        function openModal() {
+            editingId = 0;
+            document.getElementById('modalTitle').textContent = 'Add New Endfielder';
+            document.getElementById('saveButtonText').textContent = 'Save Endfielder';
+            document.getElementById('characterForm').reset();
+            document.getElementById('characterForm').action = '/Endfield/Create';
+            document.getElementById('characterModal').classList.add('active');
+
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('characterModal').classList.remove('active');
+        }
+
+        function editCharacter(id) {
+            const char = characters.find(c => c.id === id);
+            if (!char) return;
+
+            editingId = id;
+            document.getElementById('modalTitle').textContent = 'Edit Endfielder';
+            document.getElementById('saveButtonText').textContent = 'Update Endfielder';
+            document.getElementById('characterForm').action = `/Endfield/Edit/${id}`;
+
+            document.getElementById('characterId').value = char.id;
+            document.getElementById('name').value = char.name;
+            document.getElementById('elementType').value = char.elementType;
+            document.getElementById('subClass').value = char.subClass;
+            document.getElementById('weaponType').value = char.weaponType;
+            document.getElementById('characterLevel').value = char.characterLevel;
+            document.getElementById('weaponLevel').value = char.weaponLevel;
+            document.getElementById('promotionLevel').value = char.promotionLevel;
+            document.getElementById('outfittingLevel').value = char.outfittingLevel;
+
+            // Trust Talents
+            document.getElementById('trustTalent1').checked = char.trustTalent1;
+            document.getElementById('trustTalent2').checked = char.trustTalent2;
+            document.getElementById('trustTalent3').checked = char.trustTalent3;
+            document.getElementById('trustTalent4').checked = char.trustTalent4;
+
+            // Under Trust Talents
+            document.getElementById('underTrustTalent1').checked = char.underTrustTalent1;
+            document.getElementById('underTrustTalent2').checked = char.underTrustTalent2;
+            document.getElementById('underTrustTalent3').checked = char.underTrustTalent3;
+            document.getElementById('underTrustTalent4').checked = char.underTrustTalent4;
+
+            // Ship Talents
+            document.getElementById('shipTalent1').checked = char.shipTalent1;
+            document.getElementById('shipTalent2').checked = char.shipTalent2;
+            document.getElementById('shipTalent3').checked = char.shipTalent3;
+            document.getElementById('shipTalent4').checked = char.shipTalent4;
+
+            // Main Talents
+            document.getElementById('mainTalent1').value = char.mainTalent1;
+            document.getElementById('mainTalent2').value = char.mainTalent2;
+            document.getElementById('mainTalent3').value = char.mainTalent3;
+            document.getElementById('mainTalent4').value = char.mainTalent4;
+
+            document.getElementById('characterModal').classList.add('active');
+            lucide.createIcons();
+        }
+
+        function deleteCharacter(id) {
+            if (!confirm('Are you sure you want to delete this Endfielder?')) return;
+
+            const form = document.getElementById('deleteForm');
+            form.action = `/Endfield/Delete/${id}`;
+            form.submit();
+        }
+    </script>
+</body>
+</html>
